@@ -119,14 +119,14 @@ jobs:
           
           const body = `🐳 **Docker Image Ready for Deployment**
 
-          **Image**: \`\${image}\`
-          **Digest**: \`\${digest}\`
+          **Image**: \`${image}\`
+          **Digest**: \`${digest}\`
 
           ### Quick Deploy:
-          \\\`\\\`\\\`bash
-          docker pull \${image}
-          docker run -p 3007:3007 -e NODE_ENV=production \${image}
-          \\\`\\\`\\\`
+          \`\`\`bash
+          docker pull ${image}
+          docker run -p 3007:3007 -e NODE_ENV=production ${image}
+          \`\`\`
 
           ### Available on:
           - 🖥️ AMD64 (Intel/AMD servers)
