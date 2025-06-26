@@ -183,27 +183,27 @@ jobs:
       uses: actions/github-script@v7
       with:
         script: |
-          const image = '${{ needs.docker.outputs.image }}';
-          const digest = '${{ needs.docker.outputs.digest }}';
+          const image = "${{ needs.docker.outputs.image }}".split('\n')[0];
+          const digest = "${{ needs.docker.outputs.digest }}";
           
           const body = `🐳 **Docker Image Ready for Deployment**
-          
+
           **Image**: \`${image}\`
           **Digest**: \`${digest}\`
-          
+
           ### Quick Deploy:
           \`\`\`bash
           docker pull ${image}
           docker run -p 3007:3007 -e NODE_ENV=production ${image}
           \`\`\`
-          
+
           ### Available on:
-          - 🖥️ AMD64 (Intel/AMD servers)
+          - 🖥️ AMD64 (Intel/AMD servers)  
           - 🔧 ARM64 (Apple Silicon, ARM servers)
-          
+
           ✅ Security scanned and ready for production deployment!`;
           
-          github.rest.repos.createCommitComment({
+          await github.rest.repos.createCommitComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             commit_sha: context.sha,
