@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data # Optional: persist Redis data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app: # Changed from 'digilocker' to 'app' for common convention, can be changed back
+    build: .
+    env_file:
+      - .env # Ensure .env file exists and has REDIS_URL and other necessary vars
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - '${PORT:-3003}:${PORT:-3003}' # Use PORT from .env, default to 3003
+    volumes:
+      - .:/usr/src/app # Mount current directory to app directory in container for dev
+      - /usr/src/app/node_modules # Don't mount local node_modules over container's
+      # You might want to add a volume for logs if your app writes logs to files
+      # - app_logs:/usr/src/app/logs
+    healthcheck:
+      test: wget -qO- http://localhost:${PORT:-3003}/metrics || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  redis_data: # For persisting Redis data across restarts
+  # app_logs: 

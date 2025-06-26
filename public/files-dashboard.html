@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiLocker Integration - Files Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3563e9;
+            --primary-light: #e8f0fe;
+            --secondary-color: #111827;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --gray-100: #f9fafb;
+            --gray-200: #f1f5f9;
+            --gray-300: #e2e8f0;
+            --gray-400: #cbd5e1;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --border-radius: 8px;
+            --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.5;
+            color: var(--gray-700);
+            background-color: var(--gray-100);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+        }
+
+        /* Header */
+        .header {
+            background-color: #fff;
+            box-shadow: var(--box-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) 0;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .logo-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--spacing-lg);
+        }
+
+        .nav-links a {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        /* Main content */
+        .main {
+            padding: var(--spacing-xl) 0;
+            min-height: calc(100vh - 140px);
+        }
+
+        /* Footer */
+        .footer {
+            background-color: white;
+            border-top: 1px solid var(--gray-200);
+            padding: var(--spacing-lg) 0;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .social-links {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .social-links a {
+            color: var(--gray-500);
+            font-size: 1.25rem;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Cards */
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            font-weight: 500;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2954d4;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #0ca678;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--gray-100);
+        }
+
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+        }
+
+        /* Dashboard specific styles */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px 8px 40px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .file-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: var(--spacing-md);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .file-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .file-name {
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            color: var(--gray-800);
+        }
+
+        .file-meta {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .file-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .badge-primary {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .badge-success {
+            background-color: #dcfce7;
+            color: var(--success-color);
+        }
+
+        .file-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .mb-4 {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .mt-4 {
+            margin-top: var(--spacing-lg);
+        }
+
+        .p-3 {
+            padding: 12px;
+        }
+
+        .p-4 {
+            padding: var(--spacing-md);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* Links */
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                align-items: stretch;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .files-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon"><i class="fas fa-shield-alt"></i></span>
+                    DigiLocker Integration
+                </div>
+                <nav class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/auth/files-dashboard" class="active">My Files</a>
+                    <a href="/docs">Documentation</a>
+                    <a href="#" id="logout-btn" style="color: #f44336;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="main">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">My DigiLocker Files</h1>
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search files..." id="search-input">
+                </div>
+            </div>
+            
+            <!-- hConnect Verification Section -->
+            <div class="card mb-4">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h3>Global Identity Verification</h3>
+                        <p>Verify your DigiLocker identity with Hopae's hConnect network for global recognition</p>
+                    </div>
+                    <div>
+                        <button id="hconnect-verify-btn" class="btn btn-primary">
+                            <i class="fas fa-globe"></i> Verify with hConnect
+                        </button>
+                    </div>
+                </div>
+                <div id="hconnect-result" style="margin-top: 10px; display: none;" class="card p-3">
+                    <!-- Results will appear here -->
+                </div>
+            </div>
+            
+            <!-- Categories -->
+            <div class="card mb-4">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" data-category="all">All Files</button>
+                    <button class="btn btn-outline" data-category="issued">Issued Documents</button>
+                    <button class="btn btn-outline" data-category="uploaded">Uploaded Documents</button>
+                    <button class="btn btn-outline" data-category="aadhaar">Aadhaar</button>
+                    <button class="btn btn-outline" data-category="pan">PAN Card</button>
+                    <button class="btn btn-outline" data-category="education">Education</button>
+                </div>
+            </div>
+            
+            <!-- Files Grid -->
+            <div class="files-grid" id="files-container">
+                <!-- Files will be added here dynamically -->
+            </div>
+            
+            <!-- User Profile Card -->
+            <div class="card mt-4">
+                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex-shrink: 0; width: 80px; height: 80px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h2 id="user-name">Anil Kumar</h2>
+                        <p id="user-email">anil.kumar@example.com</p>
+                        <p><small id="user-id">DigiLocker ID: 123456789</small></p>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline">
+                            <i class="fas fa-sync-alt"></i> Refresh Token
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="copyright">
+                    &copy; 2025 DigiLocker Integration Demo | Digital ID Bounty Program
+                </div>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mock data for files
+            const mockFiles = [
+                {
+                    id: 'doc1',
+                    name: 'Aadhaar Card.pdf',
+                    type: 'issued',
+                    category: 'aadhaar',
+                    date: '2023-05-15',
+                    size: '1.2 MB',
+                    icon: 'fa-id-card'
+                },
+                {
+                    id: 'doc2',
+                    name: 'PAN Card.pdf',
+                    type: 'issued',
+                    category: 'pan',
+                    date: '2022-11-30',
+                    size: '0.8 MB',
+                    icon: 'fa-credit-card'
+                },
+                {
+                    id: 'doc3',
+                    name: 'Driving License.pdf',
+                    type: 'issued',
+                    category: 'government',
+                    date: '2023-02-10',
+                    size: '1.5 MB',
+                    icon: 'fa-id-card'
+                },
+                {
+                    id: 'doc4',
+                    name: 'Passport.pdf',
+                    type: 'issued',
+                    category: 'government',
+                    date: '2023-03-22',
+                    size: '2.1 MB',
+                    icon: 'fa-passport'
+                },
+                {
+                    id: 'doc5',
+                    name: 'Birth Certificate.pdf',
+                    type: 'issued',
+                    category: 'government',
+                    date: '2022-12-05',
+                    size: '0.9 MB',
+                    icon: 'fa-certificate'
+                },
+                {
+                    id: 'doc6',
+                    name: 'College Degree.pdf',
+                    type: 'uploaded',
+                    category: 'education',
+                    date: '2023-06-20',
+                    size: '3.2 MB',
+                    icon: 'fa-graduation-cap'
+                },
+                {
+                    id: 'doc7',
+                    name: 'High School Certificate.pdf',
+                    type: 'uploaded',
+                    category: 'education',
+                    date: '2023-01-15',
+                    size: '1.8 MB',
+                    icon: 'fa-graduation-cap'
+                },
+                {
+                    id: 'doc8',
+                    name: 'Property Documents.pdf',
+                    type: 'uploaded',
+                    category: 'property',
+                    date: '2023-07-10',
+                    size: '4.5 MB',
+                    icon: 'fa-home'
+                }
+            ];
+            
+            // Render files
+            function renderFiles(files) {
+                const container = document.getElementById('files-container');
+                container.innerHTML = '';
+                
+                if (files.length === 0) {
+                    container.innerHTML = '<div class="card p-4 text-center">No files found matching your criteria.</div>';
+                    return;
+                }
+                
+                files.forEach(file => {
+                    const fileCard = document.createElement('div');
+                    fileCard.className = 'file-card';
+                    fileCard.innerHTML = `
+                        <div class="file-icon">
+                            <i class="fas ${file.icon}"></i>
+                        </div>
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-meta">
+                            <div>Added: ${formatDate(file.date)}</div>
+                            <div>Size: ${file.size}</div>
+                        </div>
+                        <div class="file-badge ${file.type === 'issued' ? 'badge-primary' : 'badge-success'}">
+                            ${file.type === 'issued' ? 'Issued' : 'Uploaded'}
+                        </div>
+                        <div class="file-actions mt-2">
+                            <button class="btn btn-outline">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn btn-outline">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(fileCard);
+                });
+            }
+            
+            // Format date
+            function formatDate(dateString) {
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString('en-US', options);
+            }
+            
+            // Initial render
+            renderFiles(mockFiles);
+            
+            // Filter by category
+            const categoryButtons = document.querySelectorAll('[data-category]');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const category = this.getAttribute('data-category');
+                    
+                    // Update active button
+                    categoryButtons.forEach(btn => btn.classList.remove('btn-primary'));
+                    categoryButtons.forEach(btn => btn.classList.add('btn-outline'));
+                    this.classList.remove('btn-outline');
+                    this.classList.add('btn-primary');
+                    
+                    // Filter files
+                    let filteredFiles = mockFiles;
+                    if (category !== 'all') {
+                        if (category === 'issued' || category === 'uploaded') {
+                            filteredFiles = mockFiles.filter(file => file.type === category);
+                        } else {
+                            filteredFiles = mockFiles.filter(file => file.category === category);
+                        }
+                    }
+                    
+                    renderFiles(filteredFiles);
+                });
+            });
+            
+            // Search functionality
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filteredFiles = mockFiles.filter(file => 
+                    file.name.toLowerCase().includes(searchTerm) ||
+                    file.category.toLowerCase().includes(searchTerm)
+                );
+                renderFiles(filteredFiles);
+            });
+            
+            // Logout functionality
+            document.getElementById('logout-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                // In a real implementation, call the logout API endpoint
+                fetch('/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/auth/login-page';
+                    }
+                })
+                .catch(error => {
+                    console.error('Logout failed:', error);
+                    // Fallback to client-side redirect
+                    window.location.href = '/auth/login-page';
+                });
+            });
+            
+            // hConnect Verification
+            document.getElementById('hconnect-verify-btn').addEventListener('click', function() {
+                const resultContainer = document.getElementById('hconnect-result');
+                resultContainer.innerHTML = '<div style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Verifying with hConnect...</div>';
+                resultContainer.style.display = 'block';
+                
+                fetch('/api/v1/hconnect/verify', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        resultContainer.innerHTML = `
+                            <div style="display: flex; align-items: center;">
+                                <div style="color: #4caf50; font-size: 2rem; margin-right: 15px;">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div>
+                                    <h4 style="color: #4caf50; margin: 0;">Successfully verified with hConnect</h4>
+                                    <p style="margin: 5px 0 0;">Verification ID: ${data.verification.verification_id}</p>
+                                    <p style="margin: 5px 0 0;">Level: ${data.verification.level} | Expires: ${new Date(data.verification.expires_at).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        resultContainer.innerHTML = `
+                            <div style="display: flex; align-items: center;">
+                                <div style="color: #f44336; font-size: 2rem; margin-right: 15px;">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div>
+                                    <h4 style="color: #f44336; margin: 0;">Verification failed</h4>
+                                    <p style="margin: 5px 0 0;">${data.message || 'An error occurred during verification.'}</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('hConnect verification error:', error);
+                    resultContainer.innerHTML = `
+                        <div style="display: flex; align-items: center;">
+                            <div style="color: #f44336; font-size: 2rem; margin-right: 15px;">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div>
+                                <h4 style="color: #f44336; margin: 0;">Verification error</h4>
+                                <p style="margin: 5px 0 0;">Failed to connect to hConnect service. Please try again later.</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

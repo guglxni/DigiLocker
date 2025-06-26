@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiLocker OAuth 2.0 Integration Guide</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        :root {
+            --primary-color: #3563e9;
+            --primary-light: #e8f0fe;
+            --secondary-color: #111827;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --gray-100: #f9fafb;
+            --gray-200: #f1f5f9;
+            --gray-300: #e2e8f0;
+            --gray-400: #cbd5e1;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --border-radius: 8px;
+            --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.6;
+            color: var(--gray-700);
+            background-color: var(--gray-100);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+        }
+
+        /* Header */
+        .header {
+            background-color: #fff;
+            box-shadow: var(--box-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) 0;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .logo-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--spacing-lg);
+        }
+
+        .nav-links a {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        /* Main content */
+        .main {
+            padding: var(--spacing-xl) 0;
+            min-height: calc(100vh - 140px);
+        }
+
+        /* Sidebar */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: var(--spacing-xl);
+            margin-top: var(--spacing-lg);
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: var(--spacing-lg);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .sidebar h3 {
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-md);
+            font-size: 1.1rem;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .sidebar a {
+            color: var(--gray-600);
+            text-decoration: none;
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius);
+            display: block;
+            transition: all 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .sidebar a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Content */
+        .content {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: var(--spacing-xl);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray-600);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .section h2 {
+            font-size: 1.8rem;
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .section h3 {
+            font-size: 1.4rem;
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .section h4 {
+            font-size: 1.2rem;
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+
+        .section p {
+            margin-bottom: var(--spacing-md);
+            line-height: 1.7;
+        }
+
+        .section ul, .section ol {
+            margin-bottom: var(--spacing-md);
+            padding-left: var(--spacing-lg);
+        }
+
+        .section li {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            margin: var(--spacing-md) 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .inline-code {
+            background: var(--gray-200);
+            color: var(--gray-800);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .info-card {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary-color);
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+        }
+
+        .warning-card {
+            background: #fef3cd;
+            border-left: 4px solid var(--warning-color);
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+        }
+
+        .success-card {
+            background: #d1fae5;
+            border-left: 4px solid var(--success-color);
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            font-weight: 500;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2954d4;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #0ca678;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--gray-100);
+        }
+
+        /* Flow diagram */
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: var(--spacing-lg) 0;
+            padding: var(--spacing-lg);
+            background: var(--gray-100);
+            border-radius: var(--border-radius);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .flow-step {
+            background: white;
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-md) 0;
+        }
+
+        .table th,
+        .table td {
+            padding: var(--spacing-sm) var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .table th {
+            background: var(--gray-100);
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .flow-diagram {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon"><i class="fas fa-shield-alt"></i></span>
+                    DigiLocker Integration
+                </div>
+                <nav class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/oauth-integration-guide.html" class="active">OAuth Guide</a>
+                    <a href="/auth/login">Try Demo</a>
+                    <a href="/auth/files-dashboard">Dashboard</a>
+                    <a href="/docs">API Docs</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="main">
+        <div class="container">
+            <div class="page-title">
+                <i class="fas fa-book"></i>
+                DigiLocker OAuth 2.0 Integration Guide
+            </div>
+            <p class="page-subtitle">
+                Complete guide to implementing DigiLocker OAuth 2.0 authentication with PKCE security in your applications
+            </p>
+
+            <div class="content-wrapper">
+                <!-- Sidebar Navigation -->
+                <aside class="sidebar">
+                    <h3>Table of Contents</h3>
+                    <ul>
+                        <li><a href="#overview" class="active">Overview</a></li>
+                        <li><a href="#prerequisites">Prerequisites</a></li>
+                        <li><a href="#oauth-flow">OAuth 2.0 Flow</a></li>
+                        <li><a href="#implementation">Implementation</a></li>
+                        <li><a href="#frontend">Frontend Integration</a></li>
+                        <li><a href="#backend">Backend Setup</a></li>
+                        <li><a href="#security">Security Best Practices</a></li>
+                        <li><a href="#testing">Testing & Debugging</a></li>
+                        <li><a href="#production">Production Deployment</a></li>
+                        <li><a href="#troubleshooting">Troubleshooting</a></li>
+                    </ul>
+                </aside>
+
+                <!-- Main Content -->
+                <div class="content">
+                    <!-- Overview Section -->
+                    <section id="overview" class="section">
+                        <h2>Overview</h2>
+                        <p>
+                            DigiLocker OAuth 2.0 integration allows your application to securely authenticate users and access their digital documents stored in DigiLocker. This guide covers both same-device and cross-device authentication flows with PKCE (Proof Key for Code Exchange) security.
+                        </p>
+
+                        <div class="info-card">
+                            <strong><i class="fas fa-info-circle"></i> What You'll Learn:</strong>
+                            <ul style="margin-top: 8px;">
+                                <li>Complete OAuth 2.0 + PKCE implementation</li>
+                                <li>Same-device browser authentication</li>
+                                <li>Cross-device QR code authentication</li>
+                                <li>Secure token management</li>
+                                <li>Document access and retrieval</li>
+                            </ul>
+                        </div>
+
+                        <h3>Authentication Flows Supported</h3>
+                        <div class="flow-diagram">
+                            <div class="flow-step">
+                                <h4>Same-Device</h4>
+                                <p>Browser-based OAuth flow</p>
+                            </div>
+                            <div class="flow-arrow">→</div>
+                            <div class="flow-step">
+                                <h4>Cross-Device</h4>
+                                <p>QR code + mobile app</p>
+                            </div>
+                            <div class="flow-arrow">→</div>
+                            <div class="flow-step">
+                                <h4>Secure Access</h4>
+                                <p>Document retrieval</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Prerequisites Section -->
+                    <section id="prerequisites" class="section">
+                        <h2>Prerequisites</h2>
+                        <p>Before implementing DigiLocker OAuth integration, ensure you have:</p>
+
+                        <h3>Development Environment</h3>
+                        <ul>
+                            <li>Node.js 16+ and npm/yarn</li>
+                            <li>TypeScript knowledge (recommended)</li>
+                            <li>Basic understanding of OAuth 2.0 concepts</li>
+                            <li>HTTPS-enabled development environment</li>
+                        </ul>
+
+                        <h3>DigiLocker Registration</h3>
+                        <ol>
+                            <li>Register your application at <a href="https://partners.digilocker.gov.in" target="_blank">DigiLocker Partners Portal</a></li>
+                            <li>Obtain your <code class="inline-code">client_id</code> and <code class="inline-code">client_secret</code></li>
+                            <li>Configure redirect URIs for your application</li>
+                            <li>Set up webhook endpoints (if required)</li>
+                        </ol>
+
+                        <div class="warning-card">
+                            <strong><i class="fas fa-exclamation-triangle"></i> Important:</strong>
+                            DigiLocker requires HTTPS for all production integrations. Use ngrok or similar tools for local development testing.
+                        </div>
+                    </section>
+
+                    <!-- OAuth Flow Section -->
+                    <section id="oauth-flow" class="section">
+                        <h2>OAuth 2.0 Flow with PKCE</h2>
+                        <p>DigiLocker implements OAuth 2.0 Authorization Code flow with PKCE for enhanced security:</p>
+
+                        <h3>Flow Steps</h3>
+                        <ol>
+                            <li><strong>Generate PKCE Parameters:</strong> Create code verifier and challenge</li>
+                            <li><strong>Authorization Request:</strong> Redirect user to DigiLocker authorization server</li>
+                            <li><strong>User Authentication:</strong> User logs in with DigiLocker credentials</li>
+                            <li><strong>Authorization Code:</strong> DigiLocker redirects back with authorization code</li>
+                            <li><strong>Token Exchange:</strong> Exchange code for access token using PKCE verifier</li>
+                            <li><strong>API Access:</strong> Use access token to fetch user data and documents</li>
+                        </ol>
+
+                        <h3>PKCE Implementation</h3>
+                        <div class="code-block">
+<pre><code>// Generate PKCE parameters
+function generatePKCE() {
+    const codeVerifier = base64URLEncode(crypto.randomBytes(32));
+    const codeChallenge = base64URLEncode(
+        crypto.createHash('sha256').update(codeVerifier).digest()
+    );
+    
+    return {
+        codeVerifier,
+        codeChallenge,
+        codeChallengeMethod: 'S256'
+    };
+}</code></pre>
+                        </div>
+                    </section>
+
+                    <!-- Implementation Section -->
+                    <section id="implementation" class="section">
+                        <h2>Implementation Guide</h2>
+                        
+                        <h3>Environment Configuration</h3>
+                        <p>Set up your environment variables:</p>
+                        <div class="code-block">
+<pre><code># .env file
+DIGILOCKER_CLIENT_ID=your_client_id
+DIGILOCKER_CLIENT_SECRET=your_client_secret
+DIGILOCKER_REDIRECT_URI=https://yourapp.com/auth/callback
+DIGILOCKER_BASE_URL=https://api.digitallocker.gov.in
+
+# Session configuration
+SESSION_SECRET=your_session_secret
+REDIS_URL=redis://localhost:6379</code></pre>
+                        </div>
+
+                        <h3>Core Authentication Service</h3>
+                        <div class="code-block">
+<pre><code>import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
+
+@Injectable()
+export class DigiLockerAuthService {
+    constructor(private configService: ConfigService) {}
+
+    generateAuthUrl(state: string): { url: string, codeVerifier: string } {
+        const { codeVerifier, codeChallenge } = this.generatePKCE();
+        
+        const params = new URLSearchParams({
+            response_type: 'code',
+            client_id: this.configService.get('DIGILOCKER_CLIENT_ID'),
+            redirect_uri: this.configService.get('DIGILOCKER_REDIRECT_URI'),
+            scope: 'openid profile email documents',
+            state: state,
+            code_challenge: codeChallenge,
+            code_challenge_method: 'S256'
+        });
+
+        return {
+            url: `${this.configService.get('DIGILOCKER_BASE_URL')}/oauth2/1/authorize?${params}`,
+            codeVerifier
+        };
+    }
+
+    async exchangeCodeForToken(code: string, codeVerifier: string) {
+        const response = await fetch(`${this.configService.get('DIGILOCKER_BASE_URL')}/oauth2/1/token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                grant_type: 'authorization_code',
+                client_id: this.configService.get('DIGILOCKER_CLIENT_ID'),
+                client_secret: this.configService.get('DIGILOCKER_CLIENT_SECRET'),
+                code: code,
+                redirect_uri: this.configService.get('DIGILOCKER_REDIRECT_URI'),
+                code_verifier: codeVerifier
+            })
+        });
+
+        return response.json();
+    }
+
+    private generatePKCE() {
+        const codeVerifier = crypto.randomBytes(32).toString('base64url');
+        const codeChallenge = crypto
+            .createHash('sha256')
+            .update(codeVerifier)
+            .digest('base64url');
+        
+        return { codeVerifier, codeChallenge };
+    }
+}</code></pre>
+                        </div>
+                    </section>
+
+                    <!-- Frontend Section -->
+                    <section id="frontend" class="section">
+                        <h2>Frontend Integration</h2>
+                        
+                        <h3>Same-Device Authentication</h3>
+                        <p>Implement browser-based OAuth flow:</p>
+                        <div class="code-block">
+<pre><code>// Frontend JavaScript
+class DigiLockerAuth {
+    async initiateLogin() {
+        try {
+            const response = await fetch('/auth/login', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (response.redirected) {
+                // Redirect to DigiLocker authorization server
+                window.location.href = response.url;
+            }
+        } catch (error) {
+            console.error('Login initiation failed:', error);
+        }
+    }
+
+    async handleCallback() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        
+        if (code && state) {
+            try {
+                const response = await fetch('/auth/callback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ code, state }),
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = '/dashboard';
+                }
+            } catch (error) {
+                console.error('Callback handling failed:', error);
+            }
+        }
+    }
+}</code></pre>
+                        </div>
+
+                        <h3>Cross-Device QR Code Flow</h3>
+                        <div class="code-block">
+<pre><code>// QR Code Authentication
+class QRCodeAuth {
+    async generateQRSession() {
+        const response = await fetch('/auth/qr-session', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        
+        const { sessionId, qrCodeUrl } = await response.json();
+        
+        // Display QR code
+        this.displayQRCode(qrCodeUrl);
+        
+        // Poll for authentication status
+        this.pollAuthStatus(sessionId);
+    }
+
+    displayQRCode(url) {
+        const qrContainer = document.getElementById('qr-container');
+        qrContainer.innerHTML = `
+            <div class="qr-code-display">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}" alt="QR Code">
+                <p>Scan with DigiLocker mobile app</p>
+            </div>
+        `;
+    }
+
+    async pollAuthStatus(sessionId) {
+        const pollInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/auth/qr-status/${sessionId}`);
+                const status = await response.json();
+                
+                if (status.authenticated) {
+                    clearInterval(pollInterval);
+                    window.location.href = '/dashboard';
+                } else if (status.expired) {
+                    clearInterval(pollInterval);
+                    this.showError('QR code expired. Please try again.');
+                }
+            } catch (error) {
+                console.error('Status polling failed:', error);
+            }
+        }, 2000);
+    }
+}</code></pre>
+                        </div>
+                    </section>
+
+                    <!-- Backend Section -->
+                    <section id="backend" class="section">
+                        <h2>Backend Setup</h2>
+                        
+                        <h3>Controller Implementation</h3>
+                        <div class="code-block">
+<pre><code>@Controller('auth')
+export class AuthController {
+    constructor(
+        private authService: DigiLockerAuthService,
+        private sessionService: SessionService
+    ) {}
+
+    @Get('login')
+    async initiateLogin(@Req() req, @Res() res) {
+        const state = crypto.randomUUID();
+        const { url, codeVerifier } = this.authService.generateAuthUrl(state);
+        
+        // Store state and code verifier in session
+        req.session.oauth_state = state;
+        req.session.code_verifier = codeVerifier;
+        
+        return res.redirect(url);
+    }
+
+    @Get('callback')
+    async handleCallback(@Query() query, @Req() req, @Res() res) {
+        const { code, state } = query;
+        
+        // Validate state parameter
+        if (state !== req.session.oauth_state) {
+            throw new UnauthorizedException('Invalid state parameter');
+        }
+        
+        try {
+            const tokenResponse = await this.authService.exchangeCodeForToken(
+                code,
+                req.session.code_verifier
+            );
+            
+            // Store tokens securely
+            req.session.access_token = tokenResponse.access_token;
+            req.session.refresh_token = tokenResponse.refresh_token;
+            req.session.user_id = tokenResponse.user_id;
+            
+            return res.redirect('/dashboard');
+        } catch (error) {
+            throw new UnauthorizedException('Token exchange failed');
+        }
+    }
+
+    @Post('refresh')
+    async refreshToken(@Req() req) {
+        const refreshToken = req.session.refresh_token;
+        
+        if (!refreshToken) {
+            throw new UnauthorizedException('No refresh token available');
+        }
+        
+        const newTokens = await this.authService.refreshAccessToken(refreshToken);
+        
+        req.session.access_token = newTokens.access_token;
+        req.session.refresh_token = newTokens.refresh_token;
+        
+        return { success: true };
+    }
+}</code></pre>
+                        </div>
+                    </section>
+
+                    <!-- Security Section -->
+                    <section id="security" class="section">
+                        <h2>Security Best Practices</h2>
+                        
+                        <div class="warning-card">
+                            <strong><i class="fas fa-shield-alt"></i> Critical Security Requirements:</strong>
+                            <ul style="margin-top: 8px;">
+                                <li>Always use HTTPS in production</li>
+                                <li>Implement PKCE for all OAuth flows</li>
+                                <li>Validate state parameters</li>
+                                <li>Secure token storage</li>
+                                <li>Implement proper session management</li>
+                            </ul>
+                        </div>
+
+                        <h3>Token Security</h3>
+                        <ul>
+                            <li><strong>Storage:</strong> Store tokens in secure, HTTP-only cookies or server-side sessions</li>
+                            <li><strong>Encryption:</strong> Encrypt sensitive data at rest</li>
+                            <li><strong>Expiration:</strong> Implement proper token expiration and refresh logic</li>
+                            <li><strong>Scope:</strong> Request only necessary scopes</li>
+                        </ul>
+
+                        <h3>CSRF Protection</h3>
+                        <div class="code-block">
+<pre><code>// Implement CSRF protection
+app.use(csrf({
+    cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    }
+}));</code></pre>
+                        </div>
+                    </section>
+
+                    <!-- Testing Section -->
+                    <section id="testing" class="section">
+                        <h2>Testing & Debugging</h2>
+                        
+                        <h3>Mock Implementation</h3>
+                        <p>For development and testing, use mock endpoints:</p>
+                        <div class="code-block">
+<pre><code>// Mock DigiLocker service for testing
+@Injectable()
+export class MockDigiLockerService {
+    async mockLogin() {
+        return {
+            access_token: 'mock_access_token',
+            refresh_token: 'mock_refresh_token',
+            user_id: 'mock_user_123',
+            expires_in: 3600
+        };
+    }
+
+    async mockUserProfile() {
+        return {
+            id: 'mock_user_123',
+            name: 'John Doe',
+            email: 'john.doe@example.com',
+            phone: '+91-9876543210',
+            aadhaar_last_4: '1234'
+        };
+    }
+
+    async mockDocuments() {
+        return [
+            {
+                id: 'doc_1',
+                name: 'Aadhaar Card',
+                type: 'AADHAAR',
+                issuer: 'UIDAI',
+                date_issued: '2023-01-15'
+            },
+            {
+                id: 'doc_2',
+                name: 'PAN Card',
+                type: 'PAN',
+                issuer: 'Income Tax Department',
+                date_issued: '2022-06-10'
+            }
+        ];
+    }
+}</code></pre>
+                        </div>
+
+                        <h3>Testing Checklist</h3>
+                        <ul>
+                            <li>✅ OAuth flow initiation</li>
+                            <li>✅ PKCE parameter generation</li>
+                            <li>✅ State parameter validation</li>
+                            <li>✅ Token exchange</li>
+                            <li>✅ Token refresh</li>
+                            <li>✅ API calls with access token</li>
+                            <li>✅ Error handling</li>
+                            <li>✅ Session management</li>
+                        </ul>
+                    </section>
+
+                    <!-- Production Section -->
+                    <section id="production" class="section">
+                        <h2>Production Deployment</h2>
+                        
+                        <h3>Environment Setup</h3>
+                        <div class="code-block">
+<pre><code># Production environment variables
+NODE_ENV=production
+DIGILOCKER_CLIENT_ID=prod_client_id
+DIGILOCKER_CLIENT_SECRET=prod_client_secret
+DIGILOCKER_REDIRECT_URI=https://yourapp.com/auth/callback
+DIGILOCKER_BASE_URL=https://api.digitallocker.gov.in
+
+# Security
+SESSION_SECRET=strong_random_secret
+REDIS_URL=redis://prod-redis:6379
+DATABASE_URL=postgresql://user:pass@prod-db:5432/app
+
+# SSL/TLS
+SSL_CERT_PATH=/path/to/cert.pem
+SSL_KEY_PATH=/path/to/key.pem</code></pre>
+                        </div>
+
+                        <h3>Deployment Checklist</h3>
+                        <ul>
+                            <li>✅ HTTPS certificate configured</li>
+                            <li>✅ Environment variables set</li>
+                            <li>✅ Database migrations run</li>
+                            <li>✅ Redis/session store configured</li>
+                            <li>✅ Monitoring and logging enabled</li>
+                            <li>✅ Rate limiting implemented</li>
+                            <li>✅ Health checks configured</li>
+                        </ul>
+
+                        <div class="success-card">
+                            <strong><i class="fas fa-rocket"></i> Ready for Production!</strong>
+                            Your DigiLocker OAuth integration is now ready for production deployment.
+                        </div>
+                    </section>
+
+                    <!-- Troubleshooting Section -->
+                    <section id="troubleshooting" class="section">
+                        <h2>Troubleshooting</h2>
+                        
+                        <h3>Common Issues</h3>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Issue</th>
+                                    <th>Cause</th>
+                                    <th>Solution</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Invalid redirect URI</td>
+                                    <td>Mismatch between configured and actual URI</td>
+                                    <td>Verify redirect URI in DigiLocker partner portal</td>
+                                </tr>
+                                <tr>
+                                    <td>PKCE validation failed</td>
+                                    <td>Code verifier/challenge mismatch</td>
+                                    <td>Ensure proper PKCE parameter generation and storage</td>
+                                </tr>
+                                <tr>
+                                    <td>Token expired</td>
+                                    <td>Access token has expired</td>
+                                    <td>Implement automatic token refresh</td>
+                                </tr>
+                                <tr>
+                                    <td>CORS errors</td>
+                                    <td>Cross-origin request blocked</td>
+                                    <td>Configure proper CORS headers</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Debug Mode</h3>
+                        <div class="code-block">
+<pre><code>// Enable debug logging
+const logger = new Logger('DigiLockerAuth');
+
+logger.debug('OAuth flow initiated', { state, codeChallenge });
+logger.debug('Token exchange successful', { userId: tokenResponse.user_id });
+logger.error('Authentication failed', { error: error.message });</code></pre>
+                        </div>
+                    </section>
+
+                    <!-- Action Buttons -->
+                    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--gray-200); text-align: center;">
+                        <h3>Ready to Get Started?</h3>
+                        <p style="margin-bottom: 2rem;">Try our live demo or explore the API documentation</p>
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <a href="/auth/login" class="btn btn-primary">
+                                <i class="fas fa-play"></i> Try Live Demo
+                            </a>
+                            <a href="/auth/files-dashboard" class="btn btn-success">
+                                <i class="fas fa-tachometer-alt"></i> View Dashboard
+                            </a>
+                            <a href="/docs" class="btn btn-outline">
+                                <i class="fas fa-book"></i> API Documentation
+                            </a>
+                            <a href="/" class="btn btn-outline">
+                                <i class="fas fa-home"></i> Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Smooth scrolling for sidebar navigation
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Update active link
+                    document.querySelectorAll('.sidebar a').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Update active section on scroll
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.section');
+            const sidebarLinks = document.querySelectorAll('.sidebar a');
+            
+            let currentSection = '';
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 100 && rect.bottom >= 100) {
+                    currentSection = section.id;
+                }
+            });
+            
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

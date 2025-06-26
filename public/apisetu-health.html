@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APISetu Health Status - DigiLocker Integration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3563e9;
+            --primary-light: #e8f0fe;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --gray-100: #f9fafb;
+            --gray-200: #f1f5f9;
+            --gray-300: #e2e8f0;
+            --gray-400: #cbd5e1;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --border-radius: 8px;
+            --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.6;
+            color: var(--gray-700);
+            background-color: var(--gray-100);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+        }
+
+        /* Header */
+        .header {
+            background-color: #fff;
+            box-shadow: var(--box-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) 0;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--spacing-lg);
+        }
+
+        .nav-links a {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        /* Main content */
+        .main {
+            padding: var(--spacing-xl) 0;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray-600);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .status-card {
+            border-left: 4px solid var(--success-color);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+        }
+
+        .status-card.warning {
+            border-left-color: var(--warning-color);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+        }
+
+        .status-card.error {
+            border-left-color: var(--danger-color);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .status-icon {
+            font-size: 2rem;
+        }
+
+        .status-icon.healthy {
+            color: var(--success-color);
+        }
+
+        .status-icon.warning {
+            color: var(--warning-color);
+        }
+
+        .status-icon.error {
+            color: var(--danger-color);
+        }
+
+        .status-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-badge.healthy {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .status-badge.warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .status-badge.error {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: var(--gray-100);
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background-color: #2954d4;
+        }
+
+        .refresh-btn:disabled {
+            background-color: var(--gray-400);
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer-actions {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--gray-200);
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            font-weight: 500;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            font-size: 1rem;
+            margin: 0 8px;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--gray-100);
+        }
+
+        .last-updated {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-top: var(--spacing-md);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon"><i class="fas fa-heartbeat"></i></span>
+                    APISetu Health Monitor
+                </div>
+                <nav class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/apisetu-demo">APISetu Demo</a>
+                    <a href="/apisetu-health" class="active">Health Status</a>
+                    <a href="/metrics-dashboard">System Metrics</a>
+                    <a href="/docs">API Docs</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="main">
+        <div class="container">
+            <div class="page-title">
+                <i class="fas fa-heartbeat"></i>
+                APISetu Health Status
+            </div>
+            <p class="page-subtitle">
+                Real-time health monitoring for APISetu DigiLocker integration services
+            </p>
+
+            <!-- Status Overview -->
+            <div class="card status-card" id="status-overview">
+                <div class="status-header">
+                    <i class="fas fa-spinner fa-spin status-icon" id="status-icon"></i>
+                    <div>
+                        <div class="status-title">System Status</div>
+                        <span class="status-badge" id="status-badge">Loading...</span>
+                    </div>
+                </div>
+                <div id="status-description">Checking system health...</div>
+            </div>
+
+            <!-- Health Metrics Grid -->
+            <div class="grid">
+                <!-- Service Health -->
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--gray-800);">
+                        <i class="fas fa-server"></i> Service Health
+                    </h3>
+                    <div id="service-metrics">
+                        <div class="metric-item">
+                            <span class="metric-label">Status</span>
+                            <span class="metric-value" id="service-status">Loading...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Uptime</span>
+                            <span class="metric-value" id="service-uptime">Loading...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Version</span>
+                            <span class="metric-value" id="service-version">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Endpoints -->
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--gray-800);">
+                        <i class="fas fa-plug"></i> API Endpoints
+                    </h3>
+                    <div id="api-endpoints">
+                        <div class="metric-item">
+                            <span class="metric-label">DigiLocker API</span>
+                            <span class="metric-value" id="digilocker-status">Loading...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Document Service</span>
+                            <span class="metric-value" id="document-status">Loading...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Auth Service</span>
+                            <span class="metric-value" id="auth-status">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Environment Info -->
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--gray-800);">
+                        <i class="fas fa-cog"></i> Environment
+                    </h3>
+                    <div id="environment-info">
+                        <div class="metric-item">
+                            <span class="metric-label">Environment</span>
+                            <span class="metric-value" id="env-name">Loading...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Mode</span>
+                            <span class="metric-value" id="env-mode">Loading...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Schemas</span>
+                            <span class="metric-value" id="env-schemas">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance -->
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--gray-800);">
+                        <i class="fas fa-tachometer-alt"></i> Performance
+                    </h3>
+                    <div id="performance-metrics">
+                        <div class="metric-item">
+                            <span class="metric-label">Response Time</span>
+                            <span class="metric-value" id="response-time">Loading...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Memory Usage</span>
+                            <span class="metric-value" id="memory-usage">Loading...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">CPU Usage</span>
+                            <span class="metric-value" id="cpu-usage">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <button class="refresh-btn" id="refresh-btn" onclick="refreshHealth()">
+                    <i class="fas fa-sync-alt" id="refresh-icon"></i>
+                    Refresh Status
+                </button>
+            </div>
+
+            <div class="last-updated">
+                Last updated: <span id="last-updated">Never</span>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="footer-actions">
+                <h3>Explore More</h3>
+                <p style="margin-bottom: 2rem;">Access additional monitoring and documentation resources</p>
+                <div>
+                    <a href="/metrics-dashboard" class="btn btn-outline">
+                        <i class="fas fa-chart-line"></i> System Metrics
+                    </a>
+                    <a href="/docs" class="btn btn-outline">
+                        <i class="fas fa-book"></i> API Documentation
+                    </a>
+                    <a href="/oauth-integration-guide.html" class="btn btn-outline">
+                        <i class="fas fa-guide"></i> Integration Guide
+                    </a>
+                    <a href="/" class="btn btn-outline">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let isRefreshing = false;
+
+        async function fetchHealthData() {
+            try {
+                const response = await fetch('/apisetu/health');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Failed to fetch health data:', error);
+                return null;
+            }
+        }
+
+        function updateHealthDisplay(data) {
+            if (!data) {
+                updateStatusCard('error', 'System Error', 'Failed to fetch health data');
+                return;
+            }
+
+            // Update status overview
+            const isHealthy = data.status === 'healthy';
+            updateStatusCard(
+                isHealthy ? 'healthy' : 'error',
+                isHealthy ? 'All Systems Operational' : 'System Issues Detected',
+                isHealthy ? 'All services are running normally' : 'Some services may be experiencing issues'
+            );
+
+            // Update service metrics
+            document.getElementById('service-status').textContent = data.status || 'Unknown';
+            document.getElementById('service-uptime').textContent = data.uptime || 'Unknown';
+            document.getElementById('service-version').textContent = data.version || 'Unknown';
+
+            // Update API endpoints
+            document.getElementById('digilocker-status').textContent = data.status === 'healthy' ? 'Online' : 'Offline';
+            document.getElementById('document-status').textContent = data.status === 'healthy' ? 'Online' : 'Offline';
+            document.getElementById('auth-status').textContent = data.status === 'healthy' ? 'Online' : 'Offline';
+
+            // Update environment info
+            document.getElementById('env-name').textContent = data.environment || 'Unknown';
+            document.getElementById('env-mode').textContent = data.mode || 'Unknown';
+            document.getElementById('env-schemas').textContent = data.schemas ? Object.keys(data.schemas).length : '0';
+
+            // Update performance (mock data for now)
+            document.getElementById('response-time').textContent = '< 100ms';
+            document.getElementById('memory-usage').textContent = '45%';
+            document.getElementById('cpu-usage').textContent = '12%';
+
+            // Update last updated time
+            document.getElementById('last-updated').textContent = new Date().toLocaleString();
+        }
+
+        function updateStatusCard(status, title, description) {
+            const statusCard = document.getElementById('status-overview');
+            const statusIcon = document.getElementById('status-icon');
+            const statusBadge = document.getElementById('status-badge');
+            const statusDescription = document.getElementById('status-description');
+
+            // Remove existing status classes
+            statusCard.classList.remove('warning', 'error');
+            statusIcon.classList.remove('healthy', 'warning', 'error', 'fa-spinner', 'fa-spin', 'fa-check-circle', 'fa-exclamation-triangle', 'fa-times-circle');
+            statusBadge.classList.remove('healthy', 'warning', 'error');
+
+            // Add new status classes
+            if (status !== 'healthy') {
+                statusCard.classList.add(status);
+            }
+            statusIcon.classList.add(status);
+            statusBadge.classList.add(status);
+
+            // Update icon
+            switch (status) {
+                case 'healthy':
+                    statusIcon.classList.add('fa-check-circle');
+                    break;
+                case 'warning':
+                    statusIcon.classList.add('fa-exclamation-triangle');
+                    break;
+                case 'error':
+                    statusIcon.classList.add('fa-times-circle');
+                    break;
+            }
+
+            // Update content
+            document.querySelector('.status-title').textContent = title;
+            statusBadge.textContent = status.toUpperCase();
+            statusDescription.textContent = description;
+        }
+
+        async function refreshHealth() {
+            if (isRefreshing) return;
+
+            isRefreshing = true;
+            const refreshBtn = document.getElementById('refresh-btn');
+            const refreshIcon = document.getElementById('refresh-icon');
+
+            // Update button state
+            refreshBtn.disabled = true;
+            refreshIcon.classList.remove('fa-sync-alt');
+            refreshIcon.classList.add('fa-spinner', 'fa-spin');
+
+            try {
+                const data = await fetchHealthData();
+                updateHealthDisplay(data);
+            } finally {
+                // Reset button state
+                setTimeout(() => {
+                    refreshBtn.disabled = false;
+                    refreshIcon.classList.remove('fa-spinner', 'fa-spin');
+                    refreshIcon.classList.add('fa-sync-alt');
+                    isRefreshing = false;
+                }, 1000);
+            }
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshHealth();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(refreshHealth, 30000);
+        });
+    </script>
+</body>
+</html> 

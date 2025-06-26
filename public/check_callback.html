@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiLocker Integration - Authentication</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3563e9;
+            --secondary-color: #6c63ff;
+            --accent-color: #4ade80;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+            --gray-color: #94a3b8;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark-color);
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 90%;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo-img {
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: var(--gray-color);
+            margin-bottom: 30px;
+        }
+        
+        .progress-container {
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .progress-steps::after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            height: 2px;
+            width: 100%;
+            background-color: var(--gray-color);
+            z-index: 1;
+        }
+        
+        .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 160px;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--light-color);
+            border: 2px solid var(--gray-color);
+            color: var(--gray-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 10px;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-number {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+        
+        .step.completed .step-number::after {
+            content: '✓';
+            position: absolute;
+        }
+        
+        .step.error .step-number {
+            background-color: var(--error-color);
+            border-color: var(--error-color);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-color);
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-label {
+            color: var(--primary-color);
+        }
+        
+        .step.completed .step-label {
+            color: var(--success-color);
+        }
+        
+        .step.error .step-label {
+            color: var(--error-color);
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .panel {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .panel-header {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .panel-body {
+            padding: 20px;
+        }
+        
+        .data-item {
+            margin-bottom: 20px;
+        }
+        
+        .data-label {
+            font-size: 14px;
+            color: var(--gray-color);
+            margin-bottom: 5px;
+        }
+        
+        .data-value {
+            background-color: var(--light-color);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            font-size: 14px;
+        }
+        
+        .code-block {
+            background-color: var(--dark-color);
+            color: #a5f3fc;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .string { color: #a5d6ff; }
+        .number { color: #79c0ff; }
+        .boolean { color: #d2a8ff; }
+        .null { color: #ff7b72; }
+        .key { color: #7ee787; }
+        
+        .status-box {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+        
+        .status-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+        }
+        
+        .status-info {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .status-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .button-primary {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+        
+        .button-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.5);
+        }
+        
+        .button-secondary {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .button-secondary:hover {
+            background-color: var(--light-color);
+        }
+        
+        .button-danger {
+            background-color: var(--error-color);
+            color: white;
+        }
+        
+        .button-danger:hover {
+            background-color: #dc2626;
+        }
+        
+        .footer {
+            text-align: center;
+            color: var(--gray-color);
+            margin-top: 40px;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--light-color);
+            border-radius: 10px;
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-right: 15px;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .user-details {
+            font-size: 14px;
+            color: var(--gray-color);
+        }
+
+        .hidden {
+            display: none;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 20px auto;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .progress-steps {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+            
+            .progress-steps::after {
+                height: 100%;
+                width: 2px;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            
+            .main-content {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-img">
+                    <div class="logo-text">DL</div>
+                </div>
+            </div>
+            <h1>DigiLocker Authentication</h1>
+            <p class="subtitle">Processing your secure authentication with DigiLocker</p>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="step completed" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Initiate Login</div>
+                </div>
+                <div class="step active" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">DigiLocker Auth</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Token Exchange</div>
+                </div>
+                <div class="step" id="step4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Authentication Complete</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="loading" class="panel">
+            <div class="panel-header">
+                <span>⏳</span> Processing Authentication
+            </div>
+            <div class="panel-body">
+                <div class="status-box status-info">
+                    <span>ℹ️</span> Processing your authentication with DigiLocker...
+                </div>
+                <div class="spinner"></div>
+                <div class="data-item">
+                    <div class="data-label">Authorization Code</div>
+                    <div class="data-value" id="auth-code">Detecting...</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">State Parameter</div>
+                    <div class="data-value" id="auth-state">Detecting...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="success-content" class="main-content hidden">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>🔑</span> Authentication Tokens
+                </div>
+                <div class="panel-body">
+                    <div class="status-box status-success">
+                        <span>✅</span> Authentication successful! Tokens received and stored.
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Access Token</div>
+                        <div class="data-value" id="access-token">Loading...</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Refresh Token</div>
+                        <div class="data-value" id="refresh-token">Loading...</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Token Expires In</div>
+                        <div class="data-value" id="expires-in">Loading...</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Token Type</div>
+                        <div class="data-value" id="token-type">Loading...</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Scope</div>
+                        <div class="data-value" id="token-scope">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <span>👤</span> User Information
+                </div>
+                <div class="panel-body">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="user-avatar">U</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Loading...</div>
+                            <div class="user-details" id="user-details">Loading...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="data-item">
+                        <div class="data-label">User ID</div>
+                        <div class="data-value" id="user-id">Loading...</div>
+                    </div>
+                    
+                    <div class="data-item">
+                        <div class="data-label">Email</div>
+                        <div class="data-value" id="user-email">Loading...</div>
+                    </div>
+                    
+                    <div class="data-item">
+                        <div class="data-label">Full User Information</div>
+                        <pre class="code-block" id="user-json">Loading...</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="error-content" class="main-content hidden">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>❌</span> Authentication Error
+                </div>
+                <div class="panel-body">
+                    <div class="status-box status-error">
+                        <span>⚠️</span> <span id="error-message">An error occurred during authentication.</span>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Error Details</div>
+                        <pre class="code-block" id="error-details">No additional details available.</pre>
+                    </div>
+                    <div class="actions">
+                        <button class="button button-primary" onclick="retryAuthentication()">Try Again</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="actions-panel" class="panel hidden">
+            <div class="panel-header">
+                <span>⚙️</span> Actions
+            </div>
+            <div class="panel-body">
+                <div class="actions">
+                    <button class="button button-primary" id="check-files-btn" onclick="navigateToFiles()">View Your Files</button>
+                    <button class="button button-secondary" id="check-user-btn" onclick="checkUserInfo()">Refresh User Info</button>
+                    <button class="button button-danger" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>DigiLocker OAuth 2.0 Demo &copy; 2024 | <a href="https://github.com/yourusername/digilocker-demo" target="_blank">GitHub Repository</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Syntax highlighting for JSON
+        function syntaxHighlight(json) {
+            if (!json) return '';
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key';
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        // Update progress steps
+        function updateSteps(currentStep, error = false) {
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((step, index) => {
+                step.classList.remove('active', 'completed', 'error');
+                if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                } else if (index + 1 === currentStep) {
+                    if (error) {
+                        step.classList.add('error');
+                    } else {
+                        step.classList.add('active');
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display URL parameters if we're on a redirect
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Update auth code and state in the loading section
+            const authCodeEl = document.getElementById('auth-code');
+            const authStateEl = document.getElementById('auth-state');
+            
+            if (urlParams.has('code')) {
+                const code = urlParams.get('code');
+                const state = urlParams.get('state');
+                
+                authCodeEl.textContent = code ? `${code.substring(0, 10)}...` : 'Missing';
+                authStateEl.textContent = state || 'Missing';
+                
+                // Update progress to step 3
+                updateSteps(3);
+                
+                // Process the authorization code and exchange for tokens
+                exchangeCodeForToken(code, state);
+            } else if (urlParams.has('error')) {
+                // Handle error from DigiLocker auth server
+                const error = urlParams.get('error');
+                const errorDescription = urlParams.get('error_description') || 'Unknown error';
+                
+                showError(error, errorDescription);
+            } else {
+                // Check if we already have a token
+                checkStoredToken();
+            }
+        });
+        
+        function exchangeCodeForToken(code, state) {
+            // Call the exchange-code endpoint
+            fetch('http://localhost:3007/auth/exchange-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code,
+                    state
+                })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                // Hide loading panel
+                document.getElementById('loading').classList.add('hidden');
+                
+                if (data.accessToken) {
+                    // Store the tokens
+                    localStorage.setItem('accessToken', data.accessToken);
+                    if (data.refreshToken) {
+                        localStorage.setItem('refreshToken', data.refreshToken);
+                    }
+                    
+                    // Update progress to step 4
+                    updateSteps(4);
+                    
+                    // Display success content
+                    displaySuccessContent(data);
+                } else {
+                    showError('Invalid response', 'The server response did not contain expected token data.');
+                }
+            })
+            .catch(err => {
+                showError('Token Exchange Failed', err.message);
+                console.error('Error exchanging code:', err);
+            });
+        }
+        
+        function displaySuccessContent(data) {
+            document.getElementById('success-content').classList.remove('hidden');
+            document.getElementById('actions-panel').classList.remove('hidden');
+            
+            // Update token information
+            document.getElementById('access-token').textContent = data.accessToken ? `${data.accessToken.substring(0, 15)}...${data.accessToken.substring(data.accessToken.length - 10)}` : 'Not provided';
+            document.getElementById('refresh-token').textContent = data.refreshToken ? `${data.refreshToken.substring(0, 10)}...` : 'Not provided';
+            document.getElementById('expires-in').textContent = data.expiresIn ? `${data.expiresIn} seconds (${Math.floor(data.expiresIn / 60)} minutes)` : 'Not specified';
+            document.getElementById('token-type').textContent = 'Bearer';
+            document.getElementById('token-scope').textContent = 'read:profile';
+            
+            // Update user information if available
+            if (data.userInfo) {
+                updateUserInfo(data.userInfo);
+            } else {
+                // Make a request to get user info if not provided in the response
+                checkUserInfo();
+            }
+        }
+        
+        function updateUserInfo(userInfo) {
+            document.getElementById('user-name').textContent = userInfo.name || 'Unknown';
+            document.getElementById('user-details').textContent = userInfo.dob ? `DOB: ${userInfo.dob}` : '';
+            
+            // Set avatar with first letter of name
+            const avatar = document.getElementById('user-avatar');
+            avatar.textContent = (userInfo.name && userInfo.name.charAt(0)) || 'U';
+            
+            document.getElementById('user-id').textContent = userInfo.id || 'Not provided';
+            document.getElementById('user-email').textContent = userInfo.email || 'Not provided';
+            
+            // Format the full user JSON for display
+            const formattedJson = syntaxHighlight(JSON.stringify(userInfo, null, 2));
+            document.getElementById('user-json').innerHTML = formattedJson;
+        }
+        
+        function checkUserInfo() {
+            const accessToken = localStorage.getItem('accessToken');
+            if (!accessToken) {
+                showError('No Access Token', 'Access token is missing. Please login again.');
+                return;
+            }
+            
+            // Set loading state
+            document.getElementById('user-json').textContent = 'Loading...';
+            
+            // Make a request to get user info
+            fetch('http://localhost:3007/auth/user', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                updateUserInfo(data);
+            })
+            .catch(err => {
+                document.getElementById('user-json').textContent = `Error: ${err.message}`;
+                console.error('Error fetching user info:', err);
+            });
+        }
+        
+        function checkStoredToken() {
+            const accessToken = localStorage.getItem('accessToken');
+            
+            if (accessToken) {
+                // Hide loading content
+                document.getElementById('loading').classList.add('hidden');
+                
+                // Show success content with stored token
+                document.getElementById('success-content').classList.remove('hidden');
+                document.getElementById('actions-panel').classList.remove('hidden');
+                
+                // Update progress to step 4
+                updateSteps(4);
+                
+                // Display token info
+                document.getElementById('access-token').textContent = `${accessToken.substring(0, 15)}...${accessToken.substring(accessToken.length - 10)}`;
+                document.getElementById('refresh-token').textContent = localStorage.getItem('refreshToken') ? `${localStorage.getItem('refreshToken').substring(0, 10)}...` : 'Not stored';
+                document.getElementById('expires-in').textContent = 'Stored previously';
+                document.getElementById('token-type').textContent = 'Bearer';
+                document.getElementById('token-scope').textContent = 'read:profile';
+                
+                // Get user info
+                checkUserInfo();
+            } else {
+                showError('No Authentication', 'No authentication detected. Please login first.');
+            }
+        }
+        
+        function showError(title, message) {
+            // Hide loading content
+            document.getElementById('loading').classList.add('hidden');
+            
+            // Show error content
+            document.getElementById('error-content').classList.remove('hidden');
+            
+            // Update error message
+            document.getElementById('error-message').textContent = title;
+            document.getElementById('error-details').textContent = message;
+            
+            // Update progress to show error
+            updateSteps(3, true); // Assuming error usually happens at token exchange step
+        }
+        
+        function retryAuthentication() {
+            window.location.href = 'simple_login.html';
+        }
+        
+        function navigateToFiles() {
+            // In a real app, this would navigate to the files page
+            window.location.href = 'files_dashboard.html';
+        }
+        
+        function logout() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            window.location.href = 'simple_login.html';
+        }
+    </script>
+</body>
+</html> 

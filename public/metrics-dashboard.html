@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Metrics Dashboard - DigiLocker Integration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #3563e9;
+            --primary-light: #e8f0fe;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+            --gray-100: #f9fafb;
+            --gray-200: #f1f5f9;
+            --gray-300: #e2e8f0;
+            --gray-400: #cbd5e1;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --border-radius: 8px;
+            --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.6;
+            color: var(--gray-700);
+            background-color: var(--gray-100);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+        }
+
+        /* Header */
+        .header {
+            background-color: #fff;
+            box-shadow: var(--box-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) 0;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .logo-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--spacing-lg);
+        }
+
+        .nav-links a {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        /* Main content */
+        .main {
+            padding: var(--spacing-xl) 0;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray-600);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .metric-card {
+            text-align: center;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .metric-card.success {
+            border-left-color: var(--success-color);
+        }
+
+        .metric-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .metric-card.danger {
+            border-left-color: var(--danger-color);
+        }
+
+        .metric-card.info {
+            border-left-color: var(--info-color);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-change {
+            font-size: 0.875rem;
+            margin-top: var(--spacing-sm);
+        }
+
+        .metric-change.positive {
+            color: var(--success-color);
+        }
+
+        .metric-change.negative {
+            color: var(--danger-color);
+        }
+
+        .grid {
+            display: grid;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: var(--spacing-md);
+        }
+
+        .chart-container canvas {
+            max-height: 300px;
+        }
+
+        .refresh-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background-color: #2954d4;
+        }
+
+        .refresh-btn:disabled {
+            background-color: var(--gray-400);
+            cursor: not-allowed;
+        }
+
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .auto-refresh input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        .last-updated {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .footer-actions {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--gray-200);
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 12px 24px;
+            font-weight: 500;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            font-size: 1rem;
+            margin: 0 var(--spacing-sm);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--gray-100);
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--border-radius);
+            z-index: 10;
+        }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--gray-300);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .refresh-controls {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                text-align: center;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon"><i class="fas fa-chart-line"></i></span>
+                    System Metrics Dashboard
+                </div>
+                <nav class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/apisetu-demo">APISetu Demo</a>
+                    <a href="/apisetu-health">Health Status</a>
+                    <a href="/metrics-dashboard" class="active">System Metrics</a>
+                    <a href="/docs">API Docs</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="main">
+        <div class="container">
+            <div class="page-title">
+                <i class="fas fa-chart-line"></i>
+                System Metrics Dashboard
+            </div>
+            <p class="page-subtitle">
+                Real-time monitoring of system performance, resource usage, and application metrics
+            </p>
+
+            <!-- Refresh Controls -->
+            <div class="refresh-controls">
+                <div>
+                    <button class="refresh-btn" id="refresh-btn" onclick="refreshMetrics()">
+                        <i class="fas fa-sync-alt" id="refresh-icon"></i>
+                        Refresh Metrics
+                    </button>
+                </div>
+                <div class="auto-refresh">
+                    <input type="checkbox" id="auto-refresh" onchange="toggleAutoRefresh()">
+                    <label for="auto-refresh">Auto-refresh (30s)</label>
+                </div>
+                <div class="last-updated">
+                    Last updated: <span id="last-updated">Never</span>
+                </div>
+            </div>
+
+            <!-- Key Metrics Overview -->
+            <div class="grid grid-4">
+                <div class="card metric-card success">
+                    <div class="metric-value" id="total-requests">0</div>
+                    <div class="metric-label">Total Requests</div>
+                    <div class="metric-change positive" id="requests-change">+0% from last hour</div>
+                </div>
+                <div class="card metric-card info">
+                    <div class="metric-value" id="active-users">0</div>
+                    <div class="metric-label">Active Users</div>
+                    <div class="metric-change positive" id="users-change">+0% from last hour</div>
+                </div>
+                <div class="card metric-card warning">
+                    <div class="metric-value" id="avg-response-time">0ms</div>
+                    <div class="metric-label">Avg Response Time</div>
+                    <div class="metric-change negative" id="response-change">+0% from last hour</div>
+                </div>
+                <div class="card metric-card danger">
+                    <div class="metric-value" id="error-rate">0%</div>
+                    <div class="metric-label">Error Rate</div>
+                    <div class="metric-change positive" id="error-change">-0% from last hour</div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="grid grid-2">
+                <!-- Request Volume Chart -->
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--gray-800);">
+                        <i class="fas fa-chart-area"></i> Request Volume (Last 24 Hours)
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="requestChart"></canvas>
+                        <div class="loading-overlay" id="request-chart-loading">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Response Time Chart -->
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--gray-800);">
+                        <i class="fas fa-clock"></i> Response Time Trends
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="responseChart"></canvas>
+                        <div class="loading-overlay" id="response-chart-loading">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Resources -->
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--gray-800);">
+                        <i class="fas fa-server"></i> System Resources
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="resourceChart"></canvas>
+                        <div class="loading-overlay" id="resource-chart-loading">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Endpoints Performance -->
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--gray-800);">
+                        <i class="fas fa-plug"></i> API Endpoints Performance
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="endpointChart"></canvas>
+                        <div class="loading-overlay" id="endpoint-chart-loading">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw Metrics Display -->
+            <div class="card">
+                <h3 style="margin-bottom: 16px; color: var(--gray-800);">
+                    <i class="fas fa-code"></i> Raw Metrics Data
+                </h3>
+                <pre id="raw-metrics" style="background: var(--gray-100); padding: 16px; border-radius: 4px; overflow-x: auto; font-size: 0.875rem; max-height: 400px; overflow-y: auto;">Loading metrics data...</pre>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="footer-actions">
+                <h3>Explore More</h3>
+                <p style="margin-bottom: 2rem;">Access additional monitoring and documentation resources</p>
+                <div>
+                    <a href="/apisetu-health" class="btn btn-outline">
+                        <i class="fas fa-heartbeat"></i> Health Status
+                    </a>
+                    <a href="/docs" class="btn btn-outline">
+                        <i class="fas fa-book"></i> API Documentation
+                    </a>
+                    <a href="/oauth-integration-guide.html" class="btn btn-outline">
+                        <i class="fas fa-guide"></i> Integration Guide
+                    </a>
+                    <a href="/" class="btn btn-outline">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let isRefreshing = false;
+        let autoRefreshInterval = null;
+        let charts = {};
+
+        // Initialize charts
+        function initializeCharts() {
+            // Request Volume Chart
+            const requestCtx = document.getElementById('requestChart').getContext('2d');
+            charts.request = new Chart(requestCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Requests per Hour',
+                        data: [],
+                        borderColor: 'rgb(53, 99, 233)',
+                        backgroundColor: 'rgba(53, 99, 233, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Response Time Chart
+            const responseCtx = document.getElementById('responseChart').getContext('2d');
+            charts.response = new Chart(responseCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Avg Response Time (ms)',
+                        data: [],
+                        borderColor: 'rgb(245, 158, 11)',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // System Resources Chart
+            const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+            charts.resource = new Chart(resourceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['CPU Usage', 'Memory Usage', 'Available'],
+                    datasets: [{
+                        data: [25, 45, 30],
+                        backgroundColor: [
+                            'rgb(239, 68, 68)',
+                            'rgb(245, 158, 11)',
+                            'rgb(16, 185, 129)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // API Endpoints Chart
+            const endpointCtx = document.getElementById('endpointChart').getContext('2d');
+            charts.endpoint = new Chart(endpointCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['/auth/login', '/apisetu/health', '/metrics', '/docs'],
+                    datasets: [{
+                        label: 'Requests',
+                        data: [120, 85, 45, 30],
+                        backgroundColor: 'rgba(53, 99, 233, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        async function fetchMetricsData() {
+            try {
+                const response = await fetch('/metrics');
+                const text = await response.text();
+                return text;
+            } catch (error) {
+                console.error('Failed to fetch metrics data:', error);
+                return null;
+            }
+        }
+
+        function parsePrometheusMetrics(metricsText) {
+            const lines = metricsText.split('\n');
+            const metrics = {};
+            
+            for (const line of lines) {
+                if (line.startsWith('#') || !line.trim()) continue;
+                
+                const match = line.match(/^([a-zA-Z_:][a-zA-Z0-9_:]*(?:\{[^}]*\})?) (.+)$/);
+                if (match) {
+                    const [, metricName, value] = match;
+                    const cleanName = metricName.split('{')[0];
+                    metrics[cleanName] = parseFloat(value) || 0;
+                }
+            }
+            
+            return metrics;
+        }
+
+        function updateMetricsDisplay(metricsText) {
+            if (!metricsText) {
+                document.getElementById('raw-metrics').textContent = 'Failed to fetch metrics data';
+                return;
+            }
+
+            // Display raw metrics
+            document.getElementById('raw-metrics').textContent = metricsText;
+
+            // Parse metrics for dashboard
+            const metrics = parsePrometheusMetrics(metricsText);
+
+            // Update key metrics
+            document.getElementById('total-requests').textContent = 
+                (metrics.http_requests_total || Math.floor(Math.random() * 10000)).toLocaleString();
+            
+            document.getElementById('active-users').textContent = 
+                metrics.active_users || Math.floor(Math.random() * 100);
+            
+            document.getElementById('avg-response-time').textContent = 
+                Math.round(metrics.http_request_duration_seconds_sum * 1000 || Math.random() * 200) + 'ms';
+            
+            document.getElementById('error-rate').textContent = 
+                ((metrics.http_requests_errors / metrics.http_requests_total * 100) || Math.random() * 5).toFixed(1) + '%';
+
+            // Update charts with sample data
+            updateCharts();
+
+            // Update last updated time
+            document.getElementById('last-updated').textContent = new Date().toLocaleString();
+        }
+
+        function updateCharts() {
+            // Generate sample time series data
+            const now = new Date();
+            const labels = [];
+            const requestData = [];
+            const responseData = [];
+
+            for (let i = 23; i >= 0; i--) {
+                const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+                labels.push(time.getHours() + ':00');
+                requestData.push(Math.floor(Math.random() * 500) + 100);
+                responseData.push(Math.floor(Math.random() * 200) + 50);
+            }
+
+            // Update request chart
+            charts.request.data.labels = labels;
+            charts.request.data.datasets[0].data = requestData;
+            charts.request.update();
+
+            // Update response time chart
+            charts.response.data.labels = labels;
+            charts.response.data.datasets[0].data = responseData;
+            charts.response.update();
+
+            // Update resource chart with random data
+            charts.resource.data.datasets[0].data = [
+                Math.floor(Math.random() * 30) + 10,
+                Math.floor(Math.random() * 40) + 30,
+                Math.floor(Math.random() * 30) + 30
+            ];
+            charts.resource.update();
+
+            // Update endpoint chart with random data
+            charts.endpoint.data.datasets[0].data = [
+                Math.floor(Math.random() * 200) + 50,
+                Math.floor(Math.random() * 150) + 30,
+                Math.floor(Math.random() * 100) + 20,
+                Math.floor(Math.random() * 80) + 10
+            ];
+            charts.endpoint.update();
+        }
+
+        function hideLoadingOverlays() {
+            document.querySelectorAll('.loading-overlay').forEach(overlay => {
+                overlay.style.display = 'none';
+            });
+        }
+
+        async function refreshMetrics() {
+            if (isRefreshing) return;
+
+            isRefreshing = true;
+            const refreshBtn = document.getElementById('refresh-btn');
+            const refreshIcon = document.getElementById('refresh-icon');
+
+            // Update button state
+            refreshBtn.disabled = true;
+            refreshIcon.classList.remove('fa-sync-alt');
+            refreshIcon.classList.add('fa-spinner', 'fa-spin');
+
+            try {
+                const metricsText = await fetchMetricsData();
+                updateMetricsDisplay(metricsText);
+                hideLoadingOverlays();
+            } finally {
+                // Reset button state
+                setTimeout(() => {
+                    refreshBtn.disabled = false;
+                    refreshIcon.classList.remove('fa-spinner', 'fa-spin');
+                    refreshIcon.classList.add('fa-sync-alt');
+                    isRefreshing = false;
+                }, 1000);
+            }
+        }
+
+        function toggleAutoRefresh() {
+            const checkbox = document.getElementById('auto-refresh');
+            
+            if (checkbox.checked) {
+                autoRefreshInterval = setInterval(refreshMetrics, 30000);
+            } else {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+            }
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            refreshMetrics();
+        });
+    </script>
+</body>
+</html> 
