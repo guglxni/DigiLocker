@@ -60,18 +60,18 @@ export class ApiSetuService {
       this.logger.log(`[${traceId}] DigiLocker request created successfully in ${duration}ms`);
 
       // Store the request for status tracking
-      const request: StoredRequest = {
+    const request: StoredRequest = {
         id: setuResponse.id,
         status: setuResponse.status,
         validUpto: setuResponse.validUpto,
         url: setuResponse.url,
-        redirectUrl: dto.redirectUrl,
+      redirectUrl: dto.redirectUrl,
         createdAt: new Date(),
-        traceId,
-      };
+      traceId,
+    };
       this.mockRequests.set(setuResponse.id, request);
 
-      return {
+    return {
         id: setuResponse.id,
         url: setuResponse.url,
         status: setuResponse.status,
@@ -115,7 +115,7 @@ export class ApiSetuService {
       this.logger.log(`[STATUS] Status check completed in ${duration}ms`);
 
       // Update local storage with real status
-      const request = this.mockRequests.get(requestId);
+    const request = this.mockRequests.get(requestId);
       if (request) {
         request.status = setuResponse.status;
         if (setuResponse.digilockerUserDetails) {
@@ -125,10 +125,10 @@ export class ApiSetuService {
             phoneNumber: setuResponse.digilockerUserDetails.phoneNumber,
           };
         }
-        this.mockRequests.set(requestId, request);
-      }
+      this.mockRequests.set(requestId, request);
+    }
 
-      return {
+    return {
         id: setuResponse.id,
         status: setuResponse.status,
         validUpto: setuResponse.validUpto,
@@ -138,7 +138,7 @@ export class ApiSetuService {
       const duration = Date.now() - startTime;
       this.logger.error(`[STATUS] Failed to get status in ${duration}ms`, error);
       throw new BadRequestException('Failed to get request status');
-    }
+  }
   }
 
 

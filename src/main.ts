@@ -25,7 +25,7 @@ async function bootstrap() {
 
   // Essential middleware
   app.use(cookieParser());
-
+  
   // Request validation
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,

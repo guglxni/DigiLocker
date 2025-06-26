@@ -11,10 +11,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: async (configService: ConfigService) => {
         const logger = new Logger('CacheModuleSetup');
         logger.log('Using in-memory cache for simplified setup');
-        
-        return {
+
+          return {
           ttl: 600000, // 10 minutes
-        };
+          };
       },
     }),
   ],

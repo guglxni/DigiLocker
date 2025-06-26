@@ -247,7 +247,7 @@ export class AvailableDocument {
 
 export class DocumentsListResponse {
   documents: AvailableDocument[];
-}
+} 
 
 export interface StoredRequest {
   id: string;
