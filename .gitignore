@@ -119,3 +119,7 @@ coverage/
 # Production config files with sensitive data
 *.prod.json
 *production*.json
+
+# SpecStory files (Cursor AI conversation history)
+.specstory/
+.specstory/**
