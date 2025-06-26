@@ -13,6 +13,7 @@ services:
       retries: 5
 
   app: # Changed from 'digilocker' to 'app' for common convention, can be changed back
+    image: ${DOCKER_IMAGE:-ghcr.io/guglxni/digilocker:latest}
     build: .
     env_file:
       - .env # Ensure .env file exists and has REDIS_URL and other necessary vars
