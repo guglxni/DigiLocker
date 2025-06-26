@@ -6,8 +6,6 @@ on:
     tags: ['v*.*.*']
   pull_request:
     branches: [main]
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       push_image:
@@ -18,13 +16,13 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # Force lowercase for GHCR compatibility
   IMAGE_NAME: ${{ github.repository_owner }}/digilocker
 
 jobs:
   docker:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       packages: write
@@ -40,13 +38,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       
-    - name: Debug Repository Info
-      run: |
-        echo "Repository: ${{ github.repository }}"
-        echo "Repository Owner: ${{ github.repository_owner }}"
-        echo "Image Name: ${{ env.IMAGE_NAME }}"
-        echo "Registry: ${{ env.REGISTRY }}"
-        
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       
@@ -68,7 +59,6 @@ jobs:
           type=ref,event=branch
           type=ref,event=pr
           type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
           type=sha,prefix=${{ github.ref_name }}-
         labels: |
           org.opencontainers.image.title=DigiLocker
@@ -80,7 +70,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: .
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64  # Single platform for speed
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -91,6 +81,7 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-latest
     needs: docker
+    timeout-minutes: 10
     if: github.event_name != 'pull_request'
     permissions:
       contents: read
@@ -111,75 +102,15 @@ jobs:
       with:
         sarif_file: 'trivy-results.sarif'
 
-  test-deployment:
-    name: Test Docker Deployment
-    runs-on: ubuntu-latest
-    needs: docker
-    if: github.event_name == 'pull_request'
-    
-    steps:
-    - name: Test container startup
-      run: |
-        echo "Testing container: ${{ needs.docker.outputs.image }}"
-        # Note: In PR context, image is built but not pushed
-        # This would test the locally built image
-        
-        # Create a test environment file
-        cat > .env.test << EOF
-        NODE_ENV=test
-        PORT=3007
-        REDIS_URL=redis://localhost:6379
-        EOF
-        
-        echo "✅ Container configuration validated"
-        echo "✅ Environment setup complete"
-        echo "✅ Ready for deployment testing"
-
   deployment-ready:
     name: Mark as Deployment Ready
     runs-on: ubuntu-latest
     needs: [docker, security]
+    timeout-minutes: 5
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
-    steps:
-    - name: Create deployment artifact
-      run: |
-        echo "# DigiLocker Docker Deployment" > deployment-info.md
-        echo "" >> deployment-info.md
-        echo "## Image Details" >> deployment-info.md
-        echo "- **Image**: \`${{ needs.docker.outputs.image }}\`" >> deployment-info.md
-        echo "- **Digest**: \`${{ needs.docker.outputs.digest }}\`" >> deployment-info.md
-        echo "- **Built**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> deployment-info.md
-        echo "- **Commit**: ${{ github.sha }}" >> deployment-info.md
-        echo "" >> deployment-info.md
-        echo "## Quick Deploy Commands" >> deployment-info.md
-        echo "\`\`\`bash" >> deployment-info.md
-        echo "# Pull and run the image" >> deployment-info.md
-        echo "docker pull ${{ needs.docker.outputs.image }}" >> deployment-info.md
-        echo "docker run -p 3007:3007 -e NODE_ENV=production ${{ needs.docker.outputs.image }}" >> deployment-info.md
-        echo "" >> deployment-info.md
-        echo "# Or use docker-compose with the new image" >> deployment-info.md
-        echo "export DOCKER_IMAGE=${{ needs.docker.outputs.image }}" >> deployment-info.md
-        echo "docker-compose up -d" >> deployment-info.md
-        echo "\`\`\`" >> deployment-info.md
-        echo "" >> deployment-info.md
-        echo "## Cloud Deployment" >> deployment-info.md
-        echo "This image is ready for deployment to:" >> deployment-info.md
-        echo "- Google Cloud Run" >> deployment-info.md
-        echo "- AWS ECS/Fargate" >> deployment-info.md
-        echo "- Azure Container Instances" >> deployment-info.md
-        echo "- Kubernetes clusters" >> deployment-info.md
-        echo "- Digital Ocean App Platform" >> deployment-info.md
-        
-    - name: Upload deployment info
-      uses: actions/upload-artifact@v4
-      with:
-        name: deployment-info
-        path: deployment-info.md
-        retention-days: 30
-        
+    steps:        
     - name: Comment on commit
-      if: github.event_name == 'push'
       uses: actions/github-script@v7
       with:
         script: |
@@ -198,9 +129,8 @@ jobs:
           \`\`\`
 
           ### Available on:
-          - 🖥️ AMD64 (Intel/AMD servers)  
-          - 🔧 ARM64 (Apple Silicon, ARM servers)
-
+          - 🖥️ AMD64 (Intel/AMD servers)
+          
           ✅ Security scanned and ready for production deployment!`;
           
           await github.rest.repos.createCommitComment({
