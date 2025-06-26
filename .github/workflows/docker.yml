@@ -117,21 +117,17 @@ jobs:
           const image = "${{ needs.docker.outputs.image }}".split('\n')[0];
           const digest = "${{ needs.docker.outputs.digest }}";
           
-          const body = `🐳 **Docker Image Ready for Deployment**
-
-          **Image**: \`${image}\`
-          **Digest**: \`${digest}\`
-
-          ### Quick Deploy:
-          \`\`\`bash
-          docker pull ${image}
-          docker run -p 3007:3007 -e NODE_ENV=production ${image}
-          \`\`\`
-
-          ### Available on:
-          - 🖥️ AMD64 (Intel/AMD servers)
-          
-          ✅ Security scanned and ready for production deployment!`;
+          const body = "🐳 **Docker Image Ready for Deployment**\n\n" +
+            "**Image**: `" + image + "`\n" +
+            "**Digest**: `" + digest + "`\n\n" +
+            "### Quick Deploy:\n" +
+            "```bash\n" +
+            "docker pull " + image + "\n" +
+            "docker run -p 3007:3007 -e NODE_ENV=production " + image + "\n" +
+            "```\n\n" +
+            "### Available on:\n" +
+            "- 🖥️ AMD64 (Intel/AMD servers)\n\n" +
+            "✅ Security scanned and ready for production deployment!";
           
           await github.rest.repos.createCommitComment({
             owner: context.repo.owner,

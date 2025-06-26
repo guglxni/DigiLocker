@@ -164,7 +164,7 @@ const ApiSetuCallback: React.FC = () => {
     };
 
     processCallback();
-  }, [navigate, location, params.requestId]);
+  }, [navigate, location, params.requestId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ 
