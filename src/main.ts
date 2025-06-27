@@ -14,7 +14,11 @@ async function bootstrap() {
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3007'],
+    origin: [
+      'http://localhost:3000', 
+      'http://localhost:3007',
+      /^https:\/\/.*\.app\.github\.dev$/,  // Allow Codespace URLs
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

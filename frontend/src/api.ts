@@ -1,7 +1,34 @@
 import axios from 'axios';
 
+// Determine the correct backend URL based on environment
+const getBackendUrl = () => {
+  // Check if we have an explicit environment variable
+  if (process.env.REACT_APP_BACKEND_URL) {
+    return process.env.REACT_APP_BACKEND_URL;
+  }
+  
+  // In development with proxy, use relative URL
+  if (process.env.NODE_ENV === 'development') {
+    return '/apisetu';
+  }
+  
+  // Check if we're in a Codespace public URL
+  const codespaceMatch = window.location.hostname.match(/^(.*)-(\d+)\.app\.github\.dev$/);
+  if (codespaceMatch) {
+    // Replace frontend port (3000) with backend port (3007)
+    const backendHost = window.location.hostname.replace(/-\d+\.app\.github\.dev$/, '-3007.app.github.dev');
+    return `${window.location.protocol}//${backendHost}/apisetu`;
+  }
+  
+  // Default to localhost for local development
+  return 'http://localhost:3007/apisetu';
+};
+
+const backendUrl = getBackendUrl();
+console.log('[API] Using backend URL:', backendUrl);
+
 const api = axios.create({ 
-  baseURL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:3007/apisetu',
+  baseURL: backendUrl,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -183,4 +210,4 @@ api.interceptors.response.use(
     
     return Promise.reject(error);
   }
-); 
+);
