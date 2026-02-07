@@ -39,7 +39,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.0",
+    "@nestjs/cli": "^11.0.16",
     "@nestjs/schematics": "^11.0.0",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
